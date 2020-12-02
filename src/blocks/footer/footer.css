@@ -1,0 +1,27 @@
+@import url(./__copyright/footer__copyright.css);
+
+.footer {
+  width: calc(100% - 400px);
+  margin: 66px auto 60px;
+}
+
+@media screen and (max-width: 1024px) {
+  .footer {
+    width: calc(100% - 240px);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .footer {
+    width: calc(100% - 70px);
+  }
+}
+
+@media screen and (max-width: 425px) {
+  .footer {
+    font-size: 14px;
+    line-height: 1.21;
+    width: calc(100% - 40px);
+    margin: 0 auto 36px;
+  }
+}

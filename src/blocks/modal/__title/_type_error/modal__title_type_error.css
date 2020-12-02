@@ -1,0 +1,10 @@
+.modal__title_type_error {
+  margin: 20px auto 20px;
+  text-align: center;
+}
+
+@media screen and (max-width: 425px) {
+  .modal__title_type_error {
+    margin: 10px auto 10px;
+  }
+}

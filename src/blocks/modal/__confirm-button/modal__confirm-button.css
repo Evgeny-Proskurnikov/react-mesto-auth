@@ -1,0 +1,29 @@
+.modal__confirm-button {
+  max-width: 358px;
+  width: 100%;
+  min-height: 50px;
+  display: block;
+  background: #000000;
+  color: #ffffff;
+  border-radius: 2px;
+  font-size: 18px;
+  line-height: 1.22;
+  margin: 0 auto 36px;
+  transition: 0.5s linear;
+  border: none;
+  outline: none;
+}
+
+.modal__confirm-button:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 425px) {
+  .modal__confirm-button {
+    max-width: 200px;
+    min-height: 40px;
+    margin: 0 auto 30px;
+    font-size: 14px;
+  }
+}

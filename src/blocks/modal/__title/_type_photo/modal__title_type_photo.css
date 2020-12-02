@@ -1,0 +1,9 @@
+.modal__title_type_photo {
+  margin: 0;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1.25;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+}

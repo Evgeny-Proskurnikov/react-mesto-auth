@@ -1,0 +1,8 @@
+.modal__conteiner_type_photo {
+  max-width: unset;
+  width: unset;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  color: #FFFFFF;
+}
