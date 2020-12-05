@@ -4,6 +4,9 @@
   margin: 50px auto;
   border-radius: 50%;
   display: block;
+  position: absolute;
+  top: 20%;
+  left: 50%;
 }
 
 .spinner i::after {

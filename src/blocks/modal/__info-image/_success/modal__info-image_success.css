@@ -1,0 +1,6 @@
+.modal__info-image_success {
+  background-image: url(../../../../images/infotooltip_success.svg);
+  width: 120px;
+  height: 120px;
+  margin: 60px auto 32px;
+}

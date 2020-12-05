@@ -1,17 +1,23 @@
 import React from 'react';
+import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
+import { CurrentUserContext, userObj } from '../contexts/CurrentUserContext';
+import { CardsContext } from '../contexts/CardsContext';
+import { FormSubmitStateContext } from '../contexts/FormSubmitStateContext';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
 import ImagePopup from './ImagePopup';
 import apiRequest from '../utils/api';
+import * as auth from '../utils/auth';
 import EditProfilePopup from './EditProfilePopup';
 import EditAvatarPopup from './EditAvatarPopup';
 import AddPlacePopup from './AddPlacePopup';
 import DeleteCardPopup from './DeleteCardPopup';
 import ErrorPopup from './ErrorPopup';
-import { CurrentUserContext, userObj } from '../contexts/CurrentUserContext';
-import { CardsContext } from '../contexts/CardsContext';
-import { FormSubmitStateContext } from '../contexts/FormSubmitStateContext';
+import Register from './Register';
+import Login from './Login';
+import ProtectedRoute from './ProtectedRoute';
+import InfoToolTip from './InfoToolTip';
 
 
 function App() {
@@ -21,6 +27,7 @@ function App() {
   const [isDeleteCardPopupOpen, setDeleteCardPopupState] = React.useState(false);
   const [isErrorPopupOpen, setErrorPopupState] = React.useState(false);
   const [isImagePopupOpen, setImagePopupState] = React.useState(false);
+  const [isInfoToolTipOpen, setInfoToolTipState] = React.useState(false);
 
   const [error, setErrorState] = React.useState('');
   const [cardToDelete, setCardToDelete] = React.useState({});
@@ -28,9 +35,16 @@ function App() {
   const [currentUser, setCurrentUser] = React.useState(userObj);
   const [cards, setCards] = React.useState([]);
   const [submitState, setSubmitState] = React.useState(false);
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  const [authRequest, setAuthRequest] = React.useState(false);
+  const [authUserData, setAuthUserData] = React.useState({});
+  const [spinnerState, setSpinnerState] = React.useState(false);
+  const history = useHistory();
 
+  // записываем стейт для формы модальных окон
   const formSubmitState = {state: submitState, setState: setSubmitState};
 
+  // получаем инфо пользователя и дефолтные карточки 
   React.useEffect(() => {
     Promise.all([apiRequest.getUserInfo(), apiRequest.getInitialCards()])
     .then(([user, items]) => {
@@ -43,43 +57,56 @@ function App() {
     })
   }, []); // eslint-disable-line
 
+  // проверка валидности токена для автоматической авторизации
+  React.useEffect(() => {
+    tokenCheck();
+  }, []) // eslint-disable-line
+
+  // добавление обработчика закрытия модалок на ESC
   function setEscListener() {
     document.addEventListener('keyup', handleEscPopupClose);
   }
 
+  // открытие модалки редактирования аватара
   function handleEditAvatarClick() {
     setAvatarPopupState(true);
     setEscListener();
   }
 
+  // открытие модалки редактирования профиля
   function handleEditProfileClick() {
     setProfilePopupState(true);
     setEscListener();
   }
 
+  // открытия модалки добавления новой карточки
   function handleAddPlaceClick() {
     setPlacePopupState(true);
     setEscListener();
   }
 
+  // открытие модалки подтверждения удаления карточки
   function handleDeleteCardClick(card) {
     setDeleteCardPopupState(true);
     setCardToDelete(card);
     setEscListener();
   }
 
+  // открытие модалки изображения карточки
   function handleCardClick(card) {
     setSelectedCard(card);
     setImagePopupState(true);
     setEscListener();
   }
 
+  // открытие модалки при ошибке
   function handleErrorMessage(err) {
     setErrorState(err);
     setErrorPopupState(true);
     setEscListener();
   }
 
+  // закрытие всех модальных окон
   function closeAllPopups() {
     setPlacePopupState(false);
     setProfilePopupState(false);
@@ -87,15 +114,18 @@ function App() {
     setDeleteCardPopupState(false);
     setErrorPopupState(false);
     setImagePopupState(false);
+    setInfoToolTipState(false)
     document.removeEventListener('keyup', handleEscPopupClose);
   }
 
+  // закрытие модалки на Esc
   function handleEscPopupClose(evt) {
     if (evt.key === 'Escape') {
       closeAllPopups();
     }
   }
 
+  // сохранение новой информации о пользователе
   function handleUpdateUser(userStateObj) {
     apiRequest.saveUserInfo(userStateObj)
     .then((user) => {
@@ -111,6 +141,7 @@ function App() {
     })
   }
 
+  // сохранение нового аватара пользователя
   function handleUpdateAvatar(avatarStateObj) {
     apiRequest.saveAvatar(avatarStateObj)
     .then((avatar) => {
@@ -126,6 +157,7 @@ function App() {
     })
   }
 
+  // добавление новой карточки
   function handleAddPlaceSubmit(card) {
     apiRequest.postCard(card)
     .then((newCard) => {
@@ -141,6 +173,7 @@ function App() {
     })
   }
 
+  // лайк/дизлайк карточки
   function handleCardLike(card) {
     const isLiked = card.likes.some(i => i._id === currentUser._id);
       // Отправляем запрос в API и получаем обновлённые данные карточки
@@ -157,6 +190,7 @@ function App() {
     })
   } 
 
+  // удаление карточки
   function handleCardDelete() {    
     apiRequest.delCard(cardToDelete._id)
     .then(() => {
@@ -173,33 +207,130 @@ function App() {
     })
   }
 
+  // открытие модалки результата регистрации/логина пользователя
+  function handleAuthRequest(boolean) {
+    setAuthRequest(boolean);
+    setInfoToolTipState(true);
+    setEscListener();
+  }
+
+  // регистрация пользователя
+  function submitRegisterForm({ password, email }) {
+    auth.register({password, email})
+      .then(res => {
+        if (res) {
+          setAuthUserData(res.data);
+          handleAuthRequest(true);
+          history.push('/sign-in');
+        } else {
+          handleAuthRequest(false);
+        }
+      })
+      .catch(err => console.log(err))
+      .finally(() => setSubmitState(false));
+  }
+
+  // логин пользователя
+  function submitLoginForm({ password, email }) {
+    auth.authorize({password, email})
+      .then(res => {
+        if (res) {
+          localStorage.setItem('token', res.token);
+          setAuthUserData({email});
+          setLoggedIn(true);
+          history.push('/');
+        } else {
+          handleAuthRequest(false);
+        }
+      })
+      .catch(err => console.log(err))
+      .finally(() => setSubmitState(false));
+  }
+
+  // проверка токена
+  function tokenCheck() {
+    const jwt = localStorage.getItem('token');
+    if (jwt) {
+      setSpinnerState(true);
+      auth.getUserData(jwt)
+      .then(res => {
+        if (res.data.email) {
+          setAuthUserData(res.data);
+          setSpinnerState(false);
+          setLoggedIn(true);
+          history.push('/');
+        }
+        setSpinnerState(false);
+      })
+      .catch(err => console.log(err))
+    }
+  }
+
+  // выйти из аккаунта, очистить локальное хранилище
+  function handleLogOut() {
+    setLoggedIn(false);
+    localStorage.clear();
+  }
+
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <CardsContext.Provider value={cards}>
-        <div className="page">
-          <Header />
-          <Main 
-          onEditProfile={handleEditProfileClick} 
-          onAddPlace={handleAddPlaceClick} 
-          onEditAvatar={handleEditAvatarClick} 
-          onCardClick={handleCardClick}
-          cards={cards}
-          onCardLike={handleCardLike}
-          onCardDelete={handleDeleteCardClick}
-          />
-          <Footer />
+        {spinnerState ? <div className="spinner"><i></i></div> :
+          <div className="page">
+            {loggedIn && <Header linkTitle='Выйти' authUserData={authUserData} loggedIn={loggedIn} handleLogout={handleLogOut} />}
 
-          <FormSubmitStateContext.Provider value={formSubmitState}>
-            <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />
-            <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} />
-            <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} /> 
-            <DeleteCardPopup isOpen={isDeleteCardPopupOpen} onClose={closeAllPopups} onCardDelete={handleCardDelete} /> 
-          </FormSubmitStateContext.Provider>
-          
-          <ErrorPopup isOpen={isErrorPopupOpen} onClose={closeAllPopups} errCode={error} /> 
-
-          <ImagePopup card={selectedCard} modalState={isImagePopupOpen && 'modal_opened'} onClose={closeAllPopups} />
-        </div>
+            <Switch>
+              <ProtectedRoute 
+                exact
+                path='/' 
+                loggedIn={loggedIn} 
+                component={Main}
+                onEditProfile={handleEditProfileClick} 
+                onAddPlace={handleAddPlaceClick} 
+                onEditAvatar={handleEditAvatarClick} 
+                onCardClick={handleCardClick}
+                cards={cards}
+                onCardLike={handleCardLike}
+                onCardDelete={handleDeleteCardClick}
+              />
+              <Route path='/sign-up'>
+                <Header link='sign-in' linkTitle='Войти' />
+                <Register 
+                  title='Регистрация' 
+                  btnName='Зарегистрироваться' 
+                  linkName='Уже зарегистрированы? Войти' 
+                  submitRegisterForm={submitRegisterForm}
+                  submitState={submitState}
+                  setSubmitState={setSubmitState}
+                />
+              </Route>
+              <Route path='/sign-in'>
+                <Header link='sign-up' linkTitle='Регистрация' />
+                <Login 
+                  title='Вход' 
+                  btnName='Войти' 
+                  submitLoginForm={submitLoginForm}
+                  submitState={submitState}
+                  setSubmitState={setSubmitState}
+                />
+              </Route>
+              <Route exact path='/'>
+                {loggedIn ? <Redirect to='/' /> : <Redirect to='/sign-in' />}
+              </Route>
+            </Switch>
+            
+            <Footer />
+            <FormSubmitStateContext.Provider value={formSubmitState}>
+              <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />
+              <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} />
+              <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} /> 
+              <DeleteCardPopup isOpen={isDeleteCardPopupOpen} onClose={closeAllPopups} onCardDelete={handleCardDelete} /> 
+            </FormSubmitStateContext.Provider>
+            <ErrorPopup isOpen={isErrorPopupOpen} onClose={closeAllPopups} errCode={error} /> 
+            <ImagePopup card={selectedCard} modalState={isImagePopupOpen && 'modal_opened'} onClose={closeAllPopups} />
+            <InfoToolTip isOpen={isInfoToolTipOpen} onClose={closeAllPopups} requestState={authRequest} />
+          </div>
+        }
       </CardsContext.Provider>
     </CurrentUserContext.Provider>
   );

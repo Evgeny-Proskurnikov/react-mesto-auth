@@ -15,6 +15,7 @@
 @import url(./__input-error/modal__input-error.css);
 @import url(./__input-error/_active/modal__input-error_active.css);
 @import url(./__confirm-button/modal__confirm-button.css);
+@import url(./__info-image/modal__info-image.css);
 
 
 .modal {

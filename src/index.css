@@ -10,6 +10,7 @@
 @import url(./blocks/modal/_opened/modal_opened.css);
 @import url(./blocks/card/card.css);
 @import url(./blocks/spinner/spinner.css);
+@import url(./blocks/form/form.css);
 
 
 html {
