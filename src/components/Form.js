@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import cn from 'classnames';
 
-function Form({ submitForm, title, btnName, linkName, setFormSubmitState, formSubmitState }) {
+function Form({ submitForm, title, btnName, setFormSubmitState, formSubmitState, children }) {
   const { register, handleSubmit, errors } = useForm({mode: 'onChange'});
 
   const onSubmit = data => {
@@ -32,7 +32,7 @@ function Form({ submitForm, title, btnName, linkName, setFormSubmitState, formSu
 
       <input
         name="password"
-        type="text"
+        type="password"
         className={cn('form__input', { "form__input_type_error":  errors.password })}
         ref={register({
           required: {value: true, message: 'Заполните это поле'},
@@ -54,7 +54,7 @@ function Form({ submitForm, title, btnName, linkName, setFormSubmitState, formSu
         {formSubmitState ? 'Загрузка...' : btnName}
       </button>
 
-      {linkName && <a className='form__login-link' href={`${window.location.origin}/sign-in`}>{linkName}</a>}
+      {children}
     </form>
   );
 }

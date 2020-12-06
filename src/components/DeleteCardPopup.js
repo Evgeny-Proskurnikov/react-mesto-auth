@@ -17,7 +17,9 @@ function DeleteCardPopup ({ card, isOpen, onClose, onCardDelete }) {
     modalState={isOpen ? 'modal_opened' : ''} 
     onClose={onClose}
     children={
-      <button type="button" className="modal__confirm-button" onClick={handleClick}>{formSubmitState.state ? 'Удаление...' : 'Да'}</button>
+      <button type="button" className="modal__confirm-button" onClick={handleClick}>
+        {formSubmitState.state ? 'Удаление...' : 'Да'}
+      </button>
     }/>
   );
 }

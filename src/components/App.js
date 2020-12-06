@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
+import { Route, Switch, Redirect, useHistory, Link } from 'react-router-dom';
 import { CurrentUserContext, userObj } from '../contexts/CurrentUserContext';
 import { CardsContext } from '../contexts/CardsContext';
 import { FormSubmitStateContext } from '../contexts/FormSubmitStateContext';
@@ -43,6 +43,8 @@ function App() {
 
   // записываем стейт для формы модальных окон
   const formSubmitState = {state: submitState, setState: setSubmitState};
+
+  const regHeaderStyle = {display: 'flex', justifyContent: 'space-between'};
 
   // получаем инфо пользователя и дефолтные карточки 
   React.useEffect(() => {
@@ -222,11 +224,12 @@ function App() {
           setAuthUserData(res.data);
           handleAuthRequest(true);
           history.push('/sign-in');
-        } else {
-          handleAuthRequest(false);
         }
       })
-      .catch(err => console.log(err))
+      .catch(err => {
+        console.log(err);
+        handleAuthRequest(false);
+      })
       .finally(() => setSubmitState(false));
   }
 
@@ -239,11 +242,12 @@ function App() {
           setAuthUserData({email});
           setLoggedIn(true);
           history.push('/');
-        } else {
-          handleAuthRequest(false);
-        }
+        } 
       })
-      .catch(err => console.log(err))
+      .catch(err => {
+        console.log(err);
+        handleAuthRequest(false);
+      })
       .finally(() => setSubmitState(false));
   }
 
@@ -277,7 +281,17 @@ function App() {
       <CardsContext.Provider value={cards}>
         {spinnerState ? <div className="spinner"><i></i></div> :
           <div className="page">
-            {loggedIn && <Header linkTitle='Выйти' authUserData={authUserData} loggedIn={loggedIn} handleLogout={handleLogOut} />}
+            {loggedIn && 
+              <Header 
+              linkTitle='Выйти' 
+              authUserData={authUserData} 
+              children={
+                <>
+                  <p className='header__text'>{authUserData.email}</p>
+                  <Link to='sign-in' className='header__link' onClick={handleLogOut}>Выйти</Link>
+                </>
+              }/>
+            }
 
             <Switch>
               <ProtectedRoute 
@@ -294,18 +308,24 @@ function App() {
                 onCardDelete={handleDeleteCardClick}
               />
               <Route path='/sign-up'>
-                <Header link='sign-in' linkTitle='Войти' />
+                <Header style={regHeaderStyle} children={
+                  <Link to='sign-in' className='header__link'>Войти</Link>
+                }/>
                 <Register 
                   title='Регистрация' 
                   btnName='Зарегистрироваться' 
-                  linkName='Уже зарегистрированы? Войти' 
                   submitRegisterForm={submitRegisterForm}
                   submitState={submitState}
                   setSubmitState={setSubmitState}
+                  children={
+                    <Link to='sign-in' className='form__login-link' >Уже зарегистрированы? Войти</Link>
+                  }
                 />
               </Route>
               <Route path='/sign-in'>
-                <Header link='sign-up' linkTitle='Регистрация' />
+                <Header style={regHeaderStyle} children={
+                  <Link to='sign-up' className='header__link'>Регистрация</Link>
+                }/>
                 <Login 
                   title='Вход' 
                   btnName='Войти' 

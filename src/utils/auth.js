@@ -13,7 +13,7 @@ export const register = (data) => {
     if (res.ok){
       return res.json();
     }
-    Promise.reject(`Ошибка: ${res.status}`);
+    return Promise.reject(`Ошибка: ${res.status}`);
   })
 }; 
 
@@ -30,7 +30,7 @@ export const authorize = (data) => {
     if (res.ok){
       return res.json();
     }
-    Promise.reject(`Ошибка: ${res.status}`);
+    return Promise.reject(`Ошибка: ${res.status}`);
   })
 }; 
 
@@ -47,6 +47,6 @@ export const getUserData = (token) => {
     if (res.ok){
       return res.json();
     }
-    Promise.reject(`Ошибка: ${res.status}`);
+    return Promise.reject(`Ошибка: ${res.status}`);
   })
 }; 

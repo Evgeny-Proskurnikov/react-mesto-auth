@@ -1,15 +1,15 @@
 import React from 'react';
 import Form from './Form';
 
-function Register({ title, btnName, linkName, submitRegisterForm, submitState, setSubmitState }) {
+function Register({ title, btnName, submitRegisterForm, submitState, setSubmitState, children }) {
   return (
     <Form 
       title={title} 
       btnName={btnName} 
-      linkName={linkName} 
       submitForm={submitRegisterForm} 
       setFormSubmitState={setSubmitState}
       formSubmitState={submitState}
+      children={children}
     />
   );
 }

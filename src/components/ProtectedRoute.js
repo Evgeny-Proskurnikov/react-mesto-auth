@@ -5,7 +5,7 @@ import { Route, Redirect } from "react-router-dom";
 // он также может взять неограниченное число пропсов и передать их новому компоненту
 const ProtectedRoute = ({ component: Component, ...props  }) => {
   return (
-    <Route>
+    <Route path={props.path}>
       {
         () => props.loggedIn ? <Component {...props} /> : <Redirect to="/sign-in" />
       }
